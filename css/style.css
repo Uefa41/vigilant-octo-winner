@@ -1,0 +1,64 @@
+* {
+  margin: 0;
+  font-family: 'Rubik', sans-serif;
+}
+
+#topbar {
+  text-align: center;
+  padding: 10px;
+  background-color: #5E239D;
+  box-shadow: 0 3px 5px #111111a0;
+}
+
+#sidebar {
+  background-color: #0099e6;
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+  display: grid;
+  grid-template-rows: calc(100% - 60px) 60px;
+  box-shadow: 3px 0 5px #111111a0;
+}
+
+#content {
+  margin-left: 200px;
+  padding: 10%;
+}
+
+.bottom-buttons {
+  height: 60px;
+}
+
+.tab {
+  padding: 7px;
+  background-color: #9BA7C0;
+}
+
+.tab_ind {
+  padding: 7px;
+  background-color: #A9BCD0;
+  padding-left: 20px;
+}
+
+.ex_unchecked {
+  margin: 10px;
+  width: 35px;
+  height: 35px;
+  font-size: 20px;
+  background-color: #eeeeee;
+  border-radius: 5px;
+}
+
+.ex_checked {
+  margin: 10px;
+  width: 35px;
+  height: 35px;
+  font-size: 20px;
+  background-color: #55b175;
+  border-radius: 5px;
+}
+
+@media screen and (max-width: 700px) {}

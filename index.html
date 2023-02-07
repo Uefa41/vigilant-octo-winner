@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title class="title">Menu</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div id="topbar">
+    <h3 class="title">Menu</h3>
+  </div>
+  <div id="main">
+    <div id="sidebar">
+      <div id="tabs">
+      </div>
+      <div class="bottom-buttons">
+        <input type="file" id="import" style="display: none">
+        <label for="import">Import</label>
+        <a download="data.json" href="data:application/octet-stream," id="export-button"
+          onclick="storage.exportFile()">Export</a>
+      </div>
+    </div>
+    <div id="content">
+      <div id="stats"></div>
+      <div id="sections">
+        <h2>Seções:</h2>
+        <button onclick="addSection">Adicionar</button>
+      </div>
+      <br>
+      <div id="exercises"></div>
+    </div>
+  </div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/script.js"></script>
+  </script>
+</body>
+
+</html>
