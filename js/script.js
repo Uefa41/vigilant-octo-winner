@@ -15,17 +15,19 @@ function convertName(name) {
 function populateSidebar() {
   let newBar = document.createElement("div");
   newBar.id = "tabs";
-  let newChild;
+  let newChild, newButton, newDiv;
   if (curr_section.length > 1) {
-    newChild = document.createElement("p");
-    newChild.innerHTML = "<b>Anterior</b>";
+    newDiv = document.createElement("div");
+    newChild = document.createElement("b");
+    newChild.innerHTML = "Anterior";
     newChild.onclick = () => {
       curr_section.pop();
       switchSection();
     };
-    newChild.className = "tab";
-    newChild.style = "background-color: #84828F";
-    newBar.appendChild(newChild);
+    newDiv.className = "tab";
+    newDiv.style = "background-color: #84828F";
+    newDiv.appendChild(newChild);
+    newBar.appendChild(newDiv);
   }
 
   let section = storage;
@@ -35,22 +37,49 @@ function populateSidebar() {
     }
   });
 
-  newChild = document.createElement("p");
-  newChild.innerHTML = "<b>" + section.name + "</b>";
-  newChild.className = "tab";
-  newBar.appendChild(newChild);
+  newDiv = document.createElement("div");
+  newChild = document.createElement("b");
+  newChild.innerHTML = section.name;
+
+  newDiv.className = "tab";
+  newDiv.appendChild(newChild);
+
+  if (curr_section.length > 1) {
+    newButton = document.createElement("button");
+    newButton.innerHTML = "<b>+</b>";
+    newButton.className = "add_button";
+    newButton.onclick = addSection;
+    newDiv.appendChild(newButton);
+  }
+
+  newBar.appendChild(newDiv);
   setTitle(section.name);
 
   Object.keys(section).forEach((key) => {
     if (key != "name" && key != "exercises" && key != "date") {
-      newChild = document.createElement("p");
-      newChild.innerHTML = "<b>" + section[key].name + "</b>";
+      newDiv = document.createElement("div");
+      newChild = document.createElement("b");
+      newChild.innerHTML = section[key].name;
       newChild.onclick = () => {
         curr_section.push(key);
         switchSection();
       };
-      newChild.className = "tab_ind";
-      newBar.appendChild(newChild);
+      newDiv.className = "tab_ind";
+      newDiv.appendChild(newChild);
+
+      newButton = document.createElement("button");
+      newButton.innerHTML = "<b>≡</b>";
+      newButton.className = "ed_button";
+      newDiv.appendChild(newButton);
+
+      if (curr_section.length > 1) {
+        newButton = document.createElement("button");
+        newButton.innerHTML = "<b>-</b>";
+        newButton.className = "rm_button";
+        newDiv.appendChild(newButton);
+      }
+
+      newBar.appendChild(newDiv);
     }
   })
   document.getElementById("tabs").replaceWith(newBar);
@@ -59,7 +88,7 @@ function populateSidebar() {
 function populateExercises() {
   let newContent = document.createElement("div");
   newContent.id = "exercises";
-  let newChild;
+  let newChild, newButton;
   let section = storage;
   curr_section.forEach((e) => {
     if (section[e]) {
@@ -70,6 +99,11 @@ function populateExercises() {
   if ("exercises" in section) {
     newChild = document.createElement("h2");
     newChild.innerHTML = "Exercícios:";
+
+    newButton = document.createElement("button");
+    newButton.innerHTML = "<b>+</b>";
+    newButton.className = "add_button";
+    newChild.appendChild(newButton);
     newContent.appendChild(newChild);
     section.exercises.forEach((e) => {
       newChild = document.createElement("button");
@@ -102,6 +136,25 @@ function populateMainContent() {
 function switchSection() {
   populateSidebar();
   populateMainContent();
+}
+
+function addSection() {
+  let name = prompt("Nome da seção:");
+  let section = storage;
+  curr_section.forEach((e) => {
+    if (section[e]) {
+      section = section[e];
+    }
+  });
+  if (convertName(name) in section) {
+    alert("Nome indisponível/inválido");
+    return;
+  }
+
+  section[convertName(name)] = {
+    name: name,
+  };
+  populateSidebar();
 }
 
 document.getElementById("import").addEventListener("change", (e) => {

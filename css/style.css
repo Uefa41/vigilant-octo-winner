@@ -37,10 +37,25 @@
   background-color: #9BA7C0;
 }
 
+.tab b {
+  margin-right: 30px;
+}
+.tab button b {
+  margin: 0;
+}
+
 .tab_ind {
   padding: 7px;
   background-color: #A9BCD0;
   padding-left: 20px;
+}
+
+.tab_ind b {
+  margin-right: 30px;
+}
+
+.tab_ind button b {
+  margin: 0;
 }
 
 .ex_unchecked {
@@ -61,4 +76,24 @@
   border-radius: 5px;
 }
 
+.add_button {
+  border: none;
+  background-color: #00000000;
+  color: green;
+  font-size: 20px;
+}
+
+.ed_button {
+  border: none;
+  background-color: #00000000;
+  color: #1111EE;
+  font-size: 20px;
+}
+
+.rm_button {
+  border: none;
+  background-color: #00000000;
+  color: red;
+  font-size: 20px;
+}
 @media screen and (max-width: 700px) {}
