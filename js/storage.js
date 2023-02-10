@@ -1,39 +1,24 @@
 class AppStorage {
-  constructor() {
-    this.data = {
-      name: "Menu",
-      books: {
-        name: "Livros/Listas",
-        listas_ze : {
-          name: "Listas Zé",
-          lista_1_geometria_riemanniana: {
-            name: "Lista 1: Geometria Riemanniana",
-            date: {
-              day: 31,
-              month : 2,
-              year: 2023
-            },
-            exercises: [
-              {
-                number: 1,
-                done: false,
-                date: null
-              },
-              {
-                number: 2,
-                done: false,
-                date: null
-              },
-              {
-                number: 3,
-                done: false,
-                date: null
-              }
-            ]
-          }
-        }
-      }
-    };
+  load(callback) {
+    if ("topical_data" in window.localStorage) {
+      this.data = JSON.parse(window.localStorage.getItem("topical_data"));
+      callback();
+    } else {
+      fetch("../default.json")
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        this.data = data;
+        this.loaded = true;
+        this.update();
+        callback();
+      });
+    }
+  }
+
+  update() {
+    window.localStorage.setItem("topical_data", JSON.stringify(this.data));
   }
 
   exportFile() {

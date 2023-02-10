@@ -96,35 +96,39 @@ function populateExercises() {
     }
   });
 
-  if ("exercises" in section) {
+  if (curr_section.length > 2 && curr_section[1] == "books") {
     newChild = document.createElement("h2");
     newChild.innerHTML = "Exercícios:";
 
     newButton = document.createElement("button");
     newButton.innerHTML = "<b>+</b>";
     newButton.className = "add_button";
+    newButton.onclick = addExercises;
     newChild.appendChild(newButton);
     newContent.appendChild(newChild);
-    section.exercises.forEach((e) => {
-      newChild = document.createElement("button");
-      newChild.innerHTML = e.number.toString();
-      newChild.className = (e.done ? "ex_checked" : "ex_unchecked");
-      newChild.onclick = () => {
-        e.done = !e.done;
-        if (e.done) {
-          let date = new Date();
-          e.date = {
-            day: date.getDate(),
-            month: date.getMonth() + 1,
-            year: date.getFullYear(),
-          };
-        } else {
-          e.date = null;
-        }
-        populateExercises();
-      };
-      newContent.appendChild(newChild);
-    });
+    if ("exercises" in section) {
+      section.exercises.forEach((e) => {
+        newChild = document.createElement("button");
+        newChild.innerHTML = e.number.toString();
+        newChild.className = (e.done ? "ex_checked" : "ex_unchecked");
+        newChild.onclick = () => {
+          e.done = !e.done;
+          storage.update();
+          if (e.done) {
+            let date = new Date();
+            e.date = {
+              day: date.getDate(),
+              month: date.getMonth() + 1,
+              year: date.getFullYear(),
+            };
+          } else {
+            e.date = null;
+          }
+          populateExercises();
+        };
+        newContent.appendChild(newChild);
+      });
+    }
   }
   document.getElementById("exercises").replaceWith(newContent);
 }
@@ -154,7 +158,44 @@ function addSection() {
   section[convertName(name)] = {
     name: name,
   };
+
+  storage.update();
   populateSidebar();
+}
+
+function addExercises() {
+  let ex1 = parseInt(prompt("Primeiro exercício"));
+  let ex2 = parseInt(prompt("Último exercício"));
+  if (ex1 > ex2) {
+    alert("Intervalo inválido");
+    return;
+  }
+
+  let res = [];
+
+  for (let i = ex1; i <= ex2; i++) {
+    res.push({
+      number: i,
+      date: null,
+      done: false,
+    });
+  }
+
+  let section = storage;
+  curr_section.forEach((e) => {
+    if (section[e]) {
+      section = section[e];
+    }
+  });
+
+  if ("exercises" in section) {
+    section.exercises = section.exercises.concat(res);
+  } else {
+    section.exercises = res;
+  }
+
+  storage.update();
+  populateExercises();
 }
 
 document.getElementById("import").addEventListener("change", (e) => {
@@ -163,4 +204,4 @@ document.getElementById("import").addEventListener("change", (e) => {
   }
 })
 
-switchSection();
+storage.load(switchSection)
