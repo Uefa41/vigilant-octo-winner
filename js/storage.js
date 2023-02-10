@@ -4,7 +4,7 @@ class AppStorage {
       this.data = JSON.parse(window.localStorage.getItem("topical_data"));
       callback();
     } else {
-      fetch("../default.json")
+      fetch("default.json")
       .then((response) => {
         return response.json();
       })
