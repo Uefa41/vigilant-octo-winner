@@ -70,6 +70,7 @@ function populateSidebar() {
       newButton = document.createElement("button");
       newButton.innerHTML = "<b>≡</b>";
       newButton.className = "ed_button";
+      newButton.onclick = () => editSection(key);
       newDiv.appendChild(newButton);
 
       if (curr_section.length > 1) {
@@ -143,7 +144,7 @@ function switchSection() {
 }
 
 function addSection() {
-  let name = prompt("Nome da seção:");
+  let name = prompt("Nome da seção");
   let section = storage;
   curr_section.forEach((e) => {
     if (section[e]) {
@@ -159,6 +160,27 @@ function addSection() {
     name: name,
   };
 
+  storage.update();
+  populateSidebar();
+}
+
+function editSection(name) {
+  let newName = prompt("Nome novo");
+  let section = storage;
+  curr_section.forEach((e) => {
+    if (section[e]) {
+      section = section[e];
+    }
+  });
+  if (convertName(newName) in section) {
+    alert("Nome indisponível/inválido");
+    return;
+  }
+
+  section[convertName(newName)] = section[name];
+  delete section[name];
+  section[convertName(newName)].name = newName;
+  
   storage.update();
   populateSidebar();
 }
