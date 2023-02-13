@@ -77,6 +77,7 @@ function populateSidebar() {
         newButton = document.createElement("button");
         newButton.innerHTML = "<b>-</b>";
         newButton.className = "rm_button";
+        newButton.onclick = () => removeSection(key);
         newDiv.appendChild(newButton);
       }
 
@@ -181,6 +182,22 @@ function editSection(name) {
   delete section[name];
   section[convertName(newName)].name = newName;
   
+  storage.update();
+  populateSidebar();
+}
+
+function removeSection(name) {
+  let section = storage;
+  curr_section.forEach((e) => {
+    if (section[e]) {
+      section = section[e];
+    }
+  });
+  if (!confirm("Deseja remover seção \"" + section[name].name + "\"?")) {
+    return;
+  }
+  delete section[name];
+
   storage.update();
   populateSidebar();
 }
