@@ -1,3 +1,4 @@
+const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
 const storage = new AppStorage();
 
 var curr_section = ["data"];
@@ -56,7 +57,7 @@ function populateSidebar() {
   setTitle(section.name);
 
   Object.keys(section).forEach((key) => {
-    if (key != "name" && key != "exercises" && key != "date") {
+    if (key != "name" && key != "exercises" && key != "date" && key != "version") {
       newDiv = document.createElement("div");
       newChild = document.createElement("b");
       newChild.innerHTML = section[key].name;
@@ -117,12 +118,7 @@ function populateExercises() {
           e.done = !e.done;
           storage.update();
           if (e.done) {
-            let date = new Date();
-            e.date = {
-              day: date.getDate(),
-              month: date.getMonth() + 1,
-              year: date.getFullYear(),
-            };
+            e.date = new Date();
           } else {
             e.date = null;
           }
@@ -235,6 +231,53 @@ function addExercises() {
 
   storage.update();
   populateExercises();
+}
+
+function dateDiff(d1, d2) {
+  return Math.floor(Math.abs(d1.getTime() - d2.getTime()) / MILLIS_PER_DAY);
+}
+
+function mergeStats(s1, s2) {
+  let res = s1;
+  Object.keys(s2).forEach((key) => {
+    if (key in res) {
+      res[key].total += s2[key].total;
+      res[key].week += s2[key].week;
+    } else {
+      res[key] = s2[key];
+    }
+  });
+
+  return res;
+}
+
+function getStats(section) {
+  let res = {
+    general: {
+      total: 0,
+      week: 0,
+    }
+  }
+  Object.keys(section).forEach((key) => {
+    if (key != "exercises" && key != "name" && key != "date" && key != "version") {
+      res = mergeStats(res, getStats(section[key]));
+    }
+  });
+
+  if ("exercises" in section) {
+    section.exercises.forEach((e) => {
+      if (e.done) {
+        res.general.total++;
+        if (e.date && "day" in e.date) {
+          e.date = new Date(e.date.year, e.date.month, e.date.day);
+        }
+        if (e.date && dateDiff(new Date(), e.date) <= 7) {
+          res.general.week++;
+        }
+      }
+    });
+  }
+  return res;
 }
 
 document.getElementById("import").addEventListener("change", (e) => {

@@ -2,6 +2,7 @@ class AppStorage {
   load(callback) {
     if ("topical_data" in window.localStorage) {
       this.data = JSON.parse(window.localStorage.getItem("topical_data"));
+      this.upgrade();
       callback();
     } else {
       fetch("./default.json")
@@ -14,6 +15,12 @@ class AppStorage {
         this.update();
         callback();
       });
+    }
+  }
+
+  upgrade() {
+    if (!("version" in this.data)) {
+      this.data.version = 0.0;
     }
   }
 
