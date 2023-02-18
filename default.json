@@ -84,9 +84,9 @@
                         "date": null,
                         "done": false
                     }
-                ]
-            },
-            "subject": "fisica"
+                ],
+                "subject": "fisica"
+            }
         }
     },
     "version": 0,

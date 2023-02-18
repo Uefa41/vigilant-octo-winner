@@ -57,7 +57,7 @@ function populateSidebar() {
     newButton = document.createElement("button");
     newButton.innerHTML = "<b>+</b>";
     newButton.className = "add_button";
-    newButton.onclick = addSection;
+    newButton.onclick = (curr_section.length == 2 && curr_section[1] == "subjects") ? addSubject : addSection;
     newDiv.appendChild(newButton);
   }
 
@@ -76,13 +76,13 @@ function populateSidebar() {
       newDiv.className = "tab_ind";
       newDiv.appendChild(newChild);
 
-      newButton = document.createElement("button");
-      newButton.innerHTML = "<b>≡</b>";
-      newButton.className = "ed_button";
-      newButton.onclick = () => editSection(key, false);
-      newDiv.appendChild(newButton);
-
       if (curr_section.length > 1) {
+        newButton = document.createElement("button");
+        newButton.innerHTML = "<b>≡</b>";
+        newButton.className = "ed_button";
+        newButton.onclick = (curr_section[1] == "subjects" && curr_section.length == 2 ? () => editSubject(key, false) : () => editSection(key, false));
+        newDiv.appendChild(newButton);
+
         newButton = document.createElement("button");
         newButton.innerHTML = "<b>-</b>";
         newButton.className = "rm_button";
@@ -213,7 +213,7 @@ function editSection(name, removeOnCancel) {
       return;
     }
 
-    if (name in storage.data.subjects[section[name].subject])
+    if (("subject" in section[name]) && (name in storage.data.subjects[section[name].subject]))
       delete storage.data.subjects[section[name].subject][name];
     if (subject != section.subject)
       storage.data.subjects[subject][convertName(new_name)] = {
@@ -251,10 +251,74 @@ function addSection() {
   editSection(name, true);
 }
 
+function editSubject(name, removeOnCancel) {
+  const subjects = storage.data.subjects;
+  
+  document.getElementById("subject_name").value = subjects[name].name;
+
+  document.getElementById("subject_cancel").onclick = () => {
+    if (removeOnCancel) {
+      delete subjects[name];
+    }
+    document.getElementById("pagemask").style = "display: none";
+    document.getElementById("subject_menu").style = "display: none";
+  };
+  document.getElementById("subject_confirm").onclick = () => {
+    let new_name = document.getElementById("subject_name").value;
+
+    if (!new_name || ((convertName(new_name) in subjects) && convertName(new_name) != name) || RESERVED_NAMES.includes(convertName(new_name))) {
+      alert("Nome indisponível/inválido");
+      return;
+    }
+
+    if (convertName(new_name) != name) {
+      let changeSubjectId = (section, oldID, newID) => {
+        if (section.subject == oldID) section.subject = newID;
+        Object.keys(section).forEach((key) => {
+          if (! RESERVED_NAMES.includes(key)) {
+            changeSubjectId(section[key], oldID, newID);
+          }
+        })
+      }
+
+      changeSubjectId(storage.data.books, name, convertName(new_name));
+
+      subjects[name].name = new_name;
+      subjects[convertName(new_name)] = subjects[name];
+
+      delete subjects[name];
+    }
+
+    storage.update();
+    populateSidebar();
+    document.getElementById("pagemask").style = "display: none";
+    document.getElementById("subject_menu").style = "display: none";
+  }
+
+  document.getElementById("pagemask").style = "";
+  document.getElementById("subject_menu").style = "";
+}
+
+function addSubject() {
+  const subjects = storage.data.subjects;
+  let time = new Date();
+  let name = "new" + time.getTime().toString();
+  subjects[name] = {
+    name: "Nova matéria",
+  };
+  editSubject(name, true);
+}
+
 function removeSection(name) {
   let section = getSection(curr_section);
-  if (!confirm("Deseja remover seção \"" + section[name].name + "\"?")) {
+  if (!confirm("Deseja remover \"" + section[name].name + "\"?")) {
     return;
+  }
+  if ("ref" in section[name]) {
+    let ref = getSection(section[name].ref);
+    delete ref;
+  } else if (("subject" in section[name]) && (name in storage.data.subjects[section[name].subject])) {
+    delete storage.data.subjects[section[name].subject][name];
   }
   delete section[name];
 
