@@ -1,4 +1,5 @@
 const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
+const RESERVED_NAMES = ["name", "exercises", "date", "version", "ref", "subject", "create"];
 const storage = new AppStorage();
 
 var curr_section = ["data"];
@@ -11,6 +12,19 @@ function setTitle(title) {
 
 function convertName(name) {
   return name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ /g, "_").replace(/:/g, "").toLowerCase();
+}
+
+function getSection(path) {
+  let section = storage;
+  path.forEach((e) => {
+    if (section[e]) {
+      section = section[e];
+    }
+    if ("ref" in section) {
+      section = getSection(section.ref);
+    }
+  });
+  return section;
 }
 
 function populateSidebar() {
@@ -31,13 +45,7 @@ function populateSidebar() {
     newBar.appendChild(newDiv);
   }
 
-  let section = storage;
-  curr_section.forEach((e) => {
-    if (section[e]) {
-      section = section[e];
-    }
-  });
-
+  let section = getSection(curr_section);
   newDiv = document.createElement("div");
   newChild = document.createElement("b");
   newChild.innerHTML = section.name;
@@ -45,7 +53,7 @@ function populateSidebar() {
   newDiv.className = "tab";
   newDiv.appendChild(newChild);
 
-  if (curr_section.length > 1) {
+  if (curr_section.length > 1 && !(curr_section.length == 3 && curr_section[1] == "subjects")) {
     newButton = document.createElement("button");
     newButton.innerHTML = "<b>+</b>";
     newButton.className = "add_button";
@@ -57,7 +65,7 @@ function populateSidebar() {
   setTitle(section.name);
 
   Object.keys(section).forEach((key) => {
-    if (key != "name" && key != "exercises" && key != "date" && key != "version") {
+    if (!(RESERVED_NAMES.includes(key))) {
       newDiv = document.createElement("div");
       newChild = document.createElement("b");
       newChild.innerHTML = section[key].name;
@@ -71,7 +79,7 @@ function populateSidebar() {
       newButton = document.createElement("button");
       newButton.innerHTML = "<b>≡</b>";
       newButton.className = "ed_button";
-      newButton.onclick = () => editSection(key);
+      newButton.onclick = () => editSection(key, false);
       newDiv.appendChild(newButton);
 
       if (curr_section.length > 1) {
@@ -92,14 +100,9 @@ function populateExercises() {
   let newContent = document.createElement("div");
   newContent.id = "exercises";
   let newChild, newButton;
-  let section = storage;
-  curr_section.forEach((e) => {
-    if (section[e]) {
-      section = section[e];
-    }
-  });
+  let section = getSection(curr_section);
 
-  if (curr_section.length > 2 && curr_section[1] == "books") {
+  if ((curr_section.length > 2 && curr_section[1] == "books") || (curr_section.length > 3 && curr_section[1] == "subjects")) {
     newChild = document.createElement("h2");
     newChild.innerHTML = "Exercícios:";
 
@@ -140,55 +143,116 @@ function switchSection() {
   populateMainContent();
 }
 
-function addSection() {
-  let name = prompt("Nome da seção");
-  let section = storage;
-  curr_section.forEach((e) => {
-    if (section[e]) {
-      section = section[e];
-    }
-  });
-  if (convertName(name) in section) {
-    alert("Nome indisponível/inválido");
-    return;
-  }
+function editSection(name, removeOnCancel) {
+  let section = getSection(curr_section);
+  if ("ref" in section[name]) section = getSection(section[name].ref.slice(0, -1));
+  document.getElementById("section_name").value = section[name].name;
 
-  section[convertName(name)] = {
-    name: name,
+  const subjects = storage.data.subjects;
+  let option;
+
+  document.getElementById("subject_select").replaceChildren();
+  Object.keys(subjects).forEach((key) => {
+    if (RESERVED_NAMES.includes(key)) return;
+    option = document.createElement("option");
+    option.value = key;
+    option.innerHTML = subjects[key].name;
+    document.getElementById("subject_select").appendChild(option);
+  });
+  option = document.createElement("option");
+  option.value = "create";
+  option.innerHTML = "Criar nova";
+  document.getElementById("subject_select").appendChild(option);
+  document.getElementById("subject_select").onchange = () => {
+    if (document.getElementById("subject_select").value == "create") {
+      const subjects = storage.data.subjects
+      let name = prompt("Nome da matéria");
+      if (!name || convertName(name) in subjects || RESERVED_NAMES.includes(convertName(name))) {
+        alert("Nome indisponível/inválido");
+        document.getElementById("subject_select").selectedIndex = 0;
+        return;
+      }
+
+      subjects[convertName(name)] = {
+        name: name,
+      };
+
+      let option = document.createElement("option");
+      option.value = convertName(name);
+      option.innerHTML = name;
+      const select = document.getElementById("subject_select").children;
+      select[select.length - 1].replaceWith(option);
+      option = document.createElement("option");
+      option.value = "create";
+      option.innerHTML = "Criar nova";
+      document.getElementById("subject_select").appendChild(option);
+
+      document.getElementById("subject_select").value = convertName(name);
+      storage.update();
+      populateSidebar();
+    }
   };
 
-  storage.update();
-  populateSidebar();
-}
+  document.getElementById("subject_select").value = section[name].subject;
 
-function editSection(name) {
-  let newName = prompt("Nome novo");
-  let section = storage;
-  curr_section.forEach((e) => {
-    if (section[e]) {
-      section = section[e];
+  document.getElementById("ed_cancel").onclick = () => {
+    if (removeOnCancel) {
+      delete section[name];
     }
-  });
-  if (convertName(newName) in section) {
-    alert("Nome indisponível/inválido");
-    return;
+    document.getElementById("pagemask").style = "display: none";
+    document.getElementById("ed_menu").style = "display: none";
+  };
+  document.getElementById("ed_confirm").onclick = () => {
+    let new_name = document.getElementById("section_name").value;
+    let subject = document.getElementById("subject_select").value;
+    let section = getSection(curr_section);
+    if ("ref" in section[name]) section = getSection(section[name].ref.slice(0, -1));
+
+    if (!new_name || ((convertName(new_name) in section) && convertName(new_name) != name) || RESERVED_NAMES.includes(convertName(new_name))) {
+      alert("Nome indisponível/inválido");
+      return;
+    }
+
+    if (name in storage.data.subjects[section[name].subject])
+      delete storage.data.subjects[section[name].subject][name];
+    if (subject != section.subject)
+      storage.data.subjects[subject][convertName(new_name)] = {
+        name: new_name,
+        ref: curr_section.concat([convertName(new_name)]),
+      };
+
+    section[name].subject = subject;
+
+    if (convertName(new_name) != name) {
+      section[name].name = new_name;
+      section[convertName(new_name)] = section[name];
+
+      delete section[name];
+    }
+
+    storage.update();
+    populateSidebar();
+    document.getElementById("pagemask").style = "display: none";
+    document.getElementById("ed_menu").style = "display: none";
   }
 
-  section[convertName(newName)] = section[name];
-  delete section[name];
-  section[convertName(newName)].name = newName;
-  
-  storage.update();
-  populateSidebar();
+  document.getElementById("pagemask").style = "";
+  document.getElementById("ed_menu").style = "";
+}
+
+function addSection() {
+  const section = getSection(curr_section);
+  let time = new Date();
+  let name = "new" + time.getTime().toString();
+  section[name] = {
+    name: "Nova seção",
+    subject: section.subject,
+  }
+  editSection(name, true);
 }
 
 function removeSection(name) {
-  let section = storage;
-  curr_section.forEach((e) => {
-    if (section[e]) {
-      section = section[e];
-    }
-  });
+  let section = getSection(curr_section);
   if (!confirm("Deseja remover seção \"" + section[name].name + "\"?")) {
     return;
   }
@@ -216,13 +280,8 @@ function addExercises() {
     });
   }
 
-  let section = storage;
-  curr_section.forEach((e) => {
-    if (section[e]) {
-      section = section[e];
-    }
-  });
-
+  let section = getSection(curr_section);
+  
   if ("exercises" in section) {
     section.exercises = section.exercises.concat(res);
   } else {
@@ -259,7 +318,7 @@ function getStats(section) {
     }
   }
   Object.keys(section).forEach((key) => {
-    if (key != "exercises" && key != "name" && key != "date" && key != "version") {
+    if (!(RESERVED_NAMES.includes(key))) {
       res = mergeStats(res, getStats(section[key]));
     }
   });

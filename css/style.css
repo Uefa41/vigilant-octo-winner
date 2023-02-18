@@ -4,6 +4,10 @@
 }
 
 #topbar {
+  position: fixed;
+  overflow: hidden;
+  width: 100%;
+  top: 0;
   text-align: center;
   padding: 10px;
   background-color: #5E239D;
@@ -12,14 +16,12 @@
 
 #sidebar {
   background-color: #0099e6;
-  margin: 0;
+  margin: 45px 0 0 0;
   padding: 0;
   width: 200px;
   position: fixed;
-  height: 100%;
+  height: calc(100% - 65px);
   overflow: auto;
-  display: grid;
-  grid-template-rows: calc(100% - 60px) 60px;
   box-shadow: 3px 0 5px #111111a0;
 }
 
@@ -29,7 +31,12 @@
 }
 
 .bottom-buttons {
-  height: 60px;
+  background-color: #1079c6;
+  top: calc(100% - 20px);
+  position: fixed;
+  height: 25px;
+  width: 200px;
+  box-shadow: 3px 0 5px #111111a0;
 }
 
 .tab {
@@ -96,4 +103,22 @@
   color: red;
   font-size: 20px;
 }
+
+#pagemask {
+  background-color: #00000080;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.menu {
+  position: absolute;
+  background-color: teal; /*CHANGEME*/
+  margin-left: 40%;
+  padding: 20px;
+  box-shadow: 3px 3px 5px #111111a0;
+}
+
 @media screen and (max-width: 700px) {}

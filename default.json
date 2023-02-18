@@ -2,8 +2,10 @@
     "name": "Menu",
     "books": {
         "name": "Livros/Listas",
+        "subject": "nenhuma",
         "listas_victor": {
             "name": "Listas Victor",
+            "subject": "fisica",
             "dinamica_-_lista_1": {
                 "name": "Dinâmica - Lista 1",
                 "exercises": [
@@ -83,7 +85,62 @@
                         "done": false
                     }
                 ]
+            },
+            "subject": "fisica"
+        }
+    },
+    "version": 0,
+    "subjects": {
+        "name": "Matérias",
+        "nenhuma": {
+            "name": "Nenhuma"
+        },
+        "artes": {
+            "name": "Artes"
+        },
+        "biologia": {
+            "name": "Biologia"
+        },
+        "filosofia": {
+            "name": "Filosofia"
+        },
+        "fisica": {
+            "name": "Física",
+            "listas_victor": {
+                "name": "Listas Victor",
+                "ref": [
+                    "data",
+                    "books",
+                    "listas_victor"
+                ]
             }
+        },
+        "geografia": {
+            "name": "Geografia"
+        },
+        "historia": {
+            "name": "História"
+        },
+        "ingles": {
+            "name": "Inglês"
+        },
+        "linguagem": {
+            "name": "Linguagem"
+        },
+        "literatura": {
+            "name": "Literatura"
+        },
+        "matematica": {
+            "name": "Matemática"
+        },
+        "quimica": {
+            "name": "Química"
+        },
+        "redacao": {
+            "name": "Redação"
+        },
+        "sociologia": {
+            "name": "Sociologia"
         }
     }
 }
