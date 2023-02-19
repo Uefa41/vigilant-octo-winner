@@ -1,8 +1,9 @@
 const MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
-const RESERVED_NAMES = ["name", "exercises", "date", "version", "ref", "subject", "create"];
+const RESERVED_NAMES = ["name", "exercises", "date", "version", "ref", "subject", "create", "general"];
 const storage = new AppStorage();
 
 var curr_section = ["data"];
+var sidebar_status = true;
 
 function setTitle(title) {
   [].forEach.call(document.getElementsByClassName("title"), (curr) => {
@@ -119,13 +120,13 @@ function populateExercises() {
         newChild.className = (e.done ? "ex_checked" : "ex_unchecked");
         newChild.onclick = () => {
           e.done = !e.done;
-          storage.update();
           if (e.done) {
             e.date = new Date();
           } else {
             e.date = null;
           }
-          populateExercises();
+          storage.update();
+          populateMainContent();
         };
         newContent.appendChild(newChild);
       });
@@ -136,6 +137,7 @@ function populateExercises() {
 
 function populateMainContent() {
   populateExercises();
+  displayStats();
 }
 
 function switchSection() {
@@ -366,6 +368,7 @@ function mergeStats(s1, s2) {
     if (key in res) {
       res[key].total += s2[key].total;
       res[key].week += s2[key].week;
+      res[key].today += s2[key].today;
     } else {
       res[key] = s2[key];
     }
@@ -377,13 +380,26 @@ function mergeStats(s1, s2) {
 function getStats(section) {
   let res = {
     general: {
+      name: "Geral",
       total: 0,
       week: 0,
+      today: 0,
     }
-  }
+  };
+  Object.keys(storage.data.subjects).forEach((key) => {
+    res[key] = {
+      name: storage.data.subjects[key].name,
+      total: 0,
+      week: 0,
+      today: 0,
+    };
+  });
   Object.keys(section).forEach((key) => {
-    if (!(RESERVED_NAMES.includes(key))) {
+    if (!(RESERVED_NAMES.includes(key)) && key != "subjects") {
       res = mergeStats(res, getStats(section[key]));
+    }
+    if (key == "ref") {
+      res = mergeStats(res, getStats(getSection(section[key])));
     }
   });
 
@@ -391,17 +407,130 @@ function getStats(section) {
     section.exercises.forEach((e) => {
       if (e.done) {
         res.general.total++;
-        if (e.date && "day" in e.date) {
+        if (e.date && typeof e.date == "string") {
+          e.date = new Date(e.date);
+        }
+        if (e.date && e.date.hasOwnProperty("day")) {
           e.date = new Date(e.date.year, e.date.month, e.date.day);
         }
-        if (e.date && dateDiff(new Date(), e.date) <= 7) {
+        let curr_date = new Date();
+        if (e.date && dateDiff(curr_date, e.date) < 7) {
           res.general.week++;
+          if ("subject" in section && section.subject in res) {
+            res[section.subject].week++;
+          }
+        }
+        if (e.date && e.date.getDay() == curr_date.getDay() && e.date.getMonth() == curr_date.getMonth() && e.date.getFullYear() == curr_date.getFullYear()) {
+          res.general.today++;
+          if ("subject" in section && section.subject in res) {
+            res[section.subject].today++;
+          }
+        }
+        if ("subject" in section && section.subject in res) {
+          res[section.subject].total++;
         }
       }
     });
   }
   return res;
 }
+
+function displayStats() {
+  let section = getSection(curr_section);
+  let stats = getStats(section);
+
+  document.getElementById("stats_total_general").innerHTML = "Total feito: " + stats.general.total.toString();
+  document.getElementById("stats_week_general").innerHTML = "Feitos na útlima semana: " + stats.general.week.toString();
+
+  document.getElementById("stats_today").innerHTML = "Feitos nas últimas 24h: " + stats.general.today.toString();
+  document.getElementById("stats_avg").innerHTML = "Média na útlima semana: " + (Math.floor(stats.general.week / 7 * 100) / 100).toString() + " por dia";
+
+  let canvas_total = document.createElement("canvas");
+  document.getElementById("total_chart").replaceWith(canvas_total);
+  canvas_total.id = "total_chart";
+  let canvas_week = document.createElement("canvas");
+  document.getElementById("week_chart").replaceWith(canvas_week);
+  canvas_week.id = "week_chart";
+
+  let data_total = {
+    labels: [],
+    datasets: [{
+      label: "Total",
+      data: [],
+      hoverOffset: 4
+    }]
+  };
+
+  let data_week = {
+    labels: [],
+    datasets: [{
+      label: "Semana",
+      data: [],
+      hoverOffset: 4
+    }]
+  };
+
+  Object.keys(stats).forEach((key) => {
+    if (stats[key].total > 0 && key != "general") {
+      data_total.datasets[0].data.push(stats[key].total);
+      data_total.labels.push(stats[key].name);
+    }
+  });
+
+  Object.keys(stats).forEach((key) => {
+    if (stats[key].total > 0 && key != "general") {
+      data_week.datasets[0].data.push(stats[key].week);
+      data_week.labels.push(stats[key].name);
+    }
+  });
+
+  const config_total = {
+    type: "doughnut",
+    data: data_total
+  };
+
+  const config_week = {
+    type: "doughnut",
+    data: data_week
+  };
+
+  new Chart(canvas_total, config_total);
+  new Chart(canvas_week, config_week);
+}
+
+function hideSidebar() {
+  document.getElementById("sidebar").style = "display: none";
+  sidebar_status = false;
+}
+
+function showSidebar() {
+  document.getElementById("sidebar").style = "";
+  sidebar_status = true;;
+}
+
+function toggleSidebar() {
+  if (sidebar_status) {
+    hideSidebar();
+  } else {
+    showSidebar();
+  }
+}
+
+function fitWidth() {
+  if (window.innerWidth <= 700) {
+    if (sidebar_status) {
+      hideSidebar();
+      document.getElementById("sidebar_button").style="";
+    }
+  } else { 
+    if (!sidebar_status) {
+      showSidebar();
+      document.getElementById("sidebar_button").style="display: none";
+    }
+  }
+}
+
+window.onresize = fitWidth;
 
 document.getElementById("import").addEventListener("change", (e) => {
   if (e.target.files[0]) {
@@ -410,3 +539,5 @@ document.getElementById("import").addEventListener("change", (e) => {
 })
 
 storage.load(switchSection)
+
+fitWidth();

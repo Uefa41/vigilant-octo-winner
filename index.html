@@ -8,13 +8,39 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rubik&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
   <div id="topbar">
+    <div><button id="sidebar_button" class="ed_button" style="display: none" onclick="toggleSidebar()">≡</button></div>
     <h3 class="title">Menu</h3>
+    <div></div>
   </div>
   <div id="main">
+    <div id="content">
+      <br>
+      <div id="exercises"></div>
+      <br>
+      <div">
+        <h2>Estatísticas:</h2>
+        <br>
+        <div id="stats">
+          <div>
+            <p id="stats_today"></p>
+            <h3>Total:</h3>
+            <p id="stats_total_general"></p>
+            <div class="chart_container"><canvas id="total_chart"></canvas></div>
+          </div>
+          <div>
+            <p id="stats_avg"></p>
+            <h3>Semana:</h3>
+            <p id="stats_week_general"></p>
+            <div class="chart_container"><canvas id="week_chart"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
     <div id="sidebar">
       <div id="tabs">
       </div>
@@ -24,11 +50,6 @@
         <a download="data.json" href="data:application/octet-stream," id="export-button"
           onclick="storage.exportFile()">Export</a>
       </div>
-    </div>
-    <div id="content">
-      <div id="stats"></div>
-      <br>
-      <div id="exercises"></div>
     </div>
   </div>
   <div id="pagemask" style="display: none"></div>

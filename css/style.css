@@ -8,10 +8,21 @@
   overflow: hidden;
   width: 100%;
   top: 0;
-  text-align: center;
   padding: 10px;
   background-color: #5E239D;
   box-shadow: 0 3px 5px #111111a0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+#topbar div:first-child {
+  margin-right: auto;
+}
+
+#topbar div:last-child {
+  margin-left: auto;
 }
 
 #sidebar {
@@ -23,6 +34,7 @@
   height: calc(100% - 65px);
   overflow: auto;
   box-shadow: 3px 0 5px #111111a0;
+  top: 0px;
 }
 
 #content {
@@ -114,11 +126,32 @@
 }
 
 .menu {
-  position: absolute;
+  position: fixed;
   background-color: teal; /*CHANGEME*/
-  margin-left: 40%;
+  top: 35%;
+  left: calc(50% - 115px);
   padding: 20px;
   box-shadow: 3px 3px 5px #111111a0;
 }
 
-@media screen and (max-width: 700px) {}
+#stats {
+  display: flex;
+  flex-direction: row;
+}
+
+.chart_container {
+  position: relative;
+  width: 300px;
+}
+
+@media screen and (max-width: 700px) {
+  #content {
+    margin-left: 0;
+    padding: 10%;
+  }
+
+  #stats {
+    display: flex;
+    flex-direction: column;
+  }
+}
