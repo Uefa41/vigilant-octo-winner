@@ -215,7 +215,7 @@ function editSection(name, removeOnCancel) {
       return;
     }
 
-    if (("subject" in section[name]) && (name in storage.data.subjects[section[name].subject]))
+    if (("subject" in section[name]) && section[name].subject && (name in storage.data.subjects[section[name].subject]))
       delete storage.data.subjects[section[name].subject][name];
     if (subject != section.subject)
       storage.data.subjects[subject][convertName(new_name)] = {
